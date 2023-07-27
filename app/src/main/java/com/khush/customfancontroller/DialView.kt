@@ -1,6 +1,7 @@
 package com.khush.customfancontroller
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -11,6 +12,7 @@ import android.view.View
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.properties.Delegates
 
 private enum class FanSpeed(val label: Int) {
     OFF(R.string.fan_off),
@@ -35,6 +37,7 @@ class DialView @JvmOverloads constructor(context: Context, attributeSet: Attribu
     private var radius = 0.0f
     private var fanSpeed = FanSpeed.OFF
     private val pointPosition: PointF = PointF(0.0f, 0.0f)
+    private var circleColor by Delegates.notNull<Int>()
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -45,6 +48,12 @@ class DialView @JvmOverloads constructor(context: Context, attributeSet: Attribu
 
     init {
         isClickable = true
+        var attributeArray: TypedArray? = context.theme.obtainStyledAttributes(
+            attributeSet,
+            R.styleable.circleview, 0, 0
+        )
+        circleColor = attributeArray?.getColor(R.styleable.circleview_circle_background, Color.GRAY) ?: Color.GRAY
+        attributeArray?.recycle()
     }
 
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
@@ -61,7 +70,7 @@ class DialView @JvmOverloads constructor(context: Context, attributeSet: Attribu
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        paint.color = if (fanSpeed == FanSpeed.OFF) Color.GRAY else Color.GREEN
+        paint.color = if (fanSpeed == FanSpeed.OFF) circleColor else Color.GREEN
         canvas.drawCircle((width / 2).toFloat(), (height / 2).toFloat(), radius, paint)
 
         val markerRadius = radius + RADIUS_OFFSET_INDICATOR
